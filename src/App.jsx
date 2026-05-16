@@ -1620,9 +1620,6 @@ export default function App() {
   const [tempFileUrl, setTempFileUrl] = useState(null);
   const [tempCredit, setTempCredit] = useState('');
 
-  // --- SETTINGS MODAL ---
-  const [showSettings, setShowSettings] = useState(false);
-
   // --- N-CALCULATOR STATE ---
   const [showNCalc, setShowNCalc] = useState(false);
   const [calcNPercent, setCalcNPercent] = useState(15);
@@ -1895,28 +1892,18 @@ export default function App() {
           </div>
           
           {/* Tabs switch positioned top right */}
-          <div className="flex items-center gap-2">
-            <div className="flex bg-emerald-950 p-1 rounded-lg border border-emerald-800">
-              <button 
-                onClick={() => setActiveTab('simulator')}
-                className={`px-3 py-1.5 md:px-5 md:py-2 rounded-md text-[11px] md:text-sm font-bold flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'simulator' ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-white'}`}
-              >
-                <Icon name="activity" className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">Risk Engine</span><span className="sm:hidden">Risk</span>
-              </button>
-              <button 
-                onClick={() => setActiveTab('database')}
-                className={`px-3 py-1.5 md:px-5 md:py-2 rounded-md text-[11px] md:text-sm font-bold flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'database' ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-white'}`}
-              >
-                <Icon name="search" className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">Database</span><span className="sm:hidden">DB</span>
-              </button>
-            </div>
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 md:p-2.5 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-300 hover:text-white hover:bg-emerald-800 transition-colors"
-              title="Settings"
-              aria-label="Open settings"
+          <div className="flex bg-emerald-950 p-1 rounded-lg border border-emerald-800">
+            <button 
+              onClick={() => setActiveTab('simulator')}
+              className={`px-3 py-1.5 md:px-5 md:py-2 rounded-md text-[11px] md:text-sm font-bold flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'simulator' ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-white'}`}
             >
-              <Icon name="settings" className="w-4 h-4 md:w-5 md:h-5" />
+              <Icon name="activity" className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">Risk Engine</span><span className="sm:hidden">Risk</span>
+            </button>
+            <button 
+              onClick={() => setActiveTab('database')}
+              className={`px-3 py-1.5 md:px-5 md:py-2 rounded-md text-[11px] md:text-sm font-bold flex items-center gap-1.5 md:gap-2 transition-all ${activeTab === 'database' ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-400 hover:text-white'}`}
+            >
+              <Icon name="search" className="w-3.5 h-3.5 md:w-4 md:h-4" /> <span className="hidden sm:inline">Database</span><span className="sm:hidden">DB</span>
             </button>
           </div>
         </div>
@@ -2732,72 +2719,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      {/* --- SETTINGS MODAL --- */}
-      {showSettings && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
-          onClick={() => setShowSettings(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl border-2 border-slate-200 w-full max-w-lg overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="bg-emerald-900 text-white px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Icon name="settings" className="w-6 h-6" />
-                <h2 className="text-xl font-bold">Settings</h2>
-              </div>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="p-1.5 rounded-lg hover:bg-emerald-800 transition-colors"
-                aria-label="Close settings"
-              >
-                <Icon name="x" className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* --- DIAGNOSTIC DIAGRAMS INFO --- */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Icon name="leaf" className="w-5 h-5 text-emerald-600" />
-                  <h3 className="text-lg font-bold text-slate-900">Diagnostic Illustrations</h3>
-                </div>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  All leaf-curl diagrams and pest illustrations are built into the app as vector
-                  drawings. They render instantly and work fully offline — no API keys, no
-                  third-party services, no network calls.
-                </p>
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-900 leading-relaxed space-y-1">
-                  <div className="flex items-start gap-2">
-                    <Icon name="shield" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                    <span>Fully offline — no internet required after the first install.</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Icon name="activity" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                    <span>Sharp at any zoom level (true vector graphics).</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                    <span>Designed to highlight the diagnostic feature, not just photograph the leaf.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* --- APP INFO --- */}
-              <div className="border-t border-slate-200 pt-4 text-xs text-slate-500 space-y-1">
-                <div className="flex items-center gap-2">
-                  <Icon name="leaf" className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="font-bold text-slate-700">AgriPro DIPM</span>
-                  <span>v1.0 — Installable PWA</span>
-                </div>
-                <p>Pest data and protocols load offline once installed.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
