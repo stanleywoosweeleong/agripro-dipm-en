@@ -1491,102 +1491,77 @@ const DT50Guide = () => {
 };
 
 
-// --- SMART CACHED AI ILLUSTRATOR ---
+// --- AI ILLUSTRATOR (Pollinations.ai — free, no API key required) ---
+// Uses image.pollinations.ai which generates an image directly from a URL.
+// We cache a seed in localStorage so each pest gets a stable image across reloads;
+// "Redraw" picks a new seed to get a different generation.
 const AIIllustration = ({ prompt, alt, id }) => {
-  const storageKey = `agripro_ai_art_${id}`;
-  const [imgUrl, setImgUrl] = useState(() => localStorage.getItem(storageKey));
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const seedKey = `agripro_ai_seed_${id}`;
+  const [seed, setSeed] = useState(() => {
+    const saved = localStorage.getItem(seedKey);
+    return saved ? parseInt(saved, 10) : Math.floor(Math.random() * 1000000);
+  });
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
 
-  const generateImage = async () => {
-    setLoading(true);
-    setError(null);
-    // API key is configured by the user in Settings and stored locally (never leaves the device)
-    const apiKey = localStorage.getItem('agripro_gemini_api_key') || '';
-    if (!apiKey) {
-      setError("No Gemini API key set. Open Settings (gear icon) to add one.");
-      setLoading(false);
-      return;
-    }
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-    const payload = {
-      instances: { prompt: prompt },
-      parameters: { sampleCount: 1 }
-    };
-
-    const fetchWithRetry = async (retries = 5, delay = 1000) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          const result = await response.json();
-          if (result.predictions?.[0]?.bytesBase64Encoded) {
-             return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-          } else {
-             throw new Error("Invalid response format");
-          }
-        } catch (err) {
-          if (i === retries - 1) throw err;
-          await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-        }
-      }
-    };
-
+  // Persist seed so the same illustration shows up next time
+  useEffect(() => {
     try {
-      const base64Img = await fetchWithRetry();
-      setImgUrl(base64Img);
-      try {
-        localStorage.setItem(storageKey, base64Img);
-      } catch(e) {
-        console.warn("Local storage full, image will only exist for this session.");
-      }
-    } catch (err) {
-      setError("Failed to generate image. Please try again.");
-    } finally {
-      setLoading(false);
+      localStorage.setItem(seedKey, String(seed));
+    } catch (e) {
+      // localStorage might be full or disabled in private mode — non-fatal
     }
+  }, [seed, seedKey]);
+
+  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=384&seed=${seed}&nologo=true&model=flux`;
+
+  const redraw = () => {
+    setLoaded(false);
+    setErrored(false);
+    setSeed(Math.floor(Math.random() * 1000000));
   };
 
-  if (imgUrl) {
-    return (
-      <div className="relative mb-4 group h-48 w-full">
-        <img src={imgUrl} alt={alt} className="w-full h-full object-cover rounded-xl border-2 border-slate-200 shadow-sm bg-white" />
-        <button onClick={generateImage} className="absolute top-2 right-2 bg-black/60 hover:bg-black/90 text-white px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold flex items-center gap-1.5 backdrop-blur-sm shadow-md">
-          <Icon name="activity" className="w-3.5 h-3.5" /> Redraw AI
-        </button>
-        <div className="absolute bottom-2 right-2 bg-white/90 text-slate-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm shadow-sm pointer-events-none">
-          AI Generated
-        </div>
-      </div>
-    );
-  }
-  
   return (
-    <div className="w-full h-48 bg-indigo-50/50 rounded-xl border-2 border-dashed border-indigo-200 mb-4 flex flex-col items-center justify-center p-4 text-center transition-colors hover:bg-indigo-50 shadow-inner">
-      {loading ? (
-        <div className="flex flex-col items-center gap-3">
-           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-           <span className="text-sm font-bold text-indigo-700">AI is painting...</span>
+    <div className="relative mb-4 group h-48 w-full">
+      {!loaded && !errored && (
+        <div className="absolute inset-0 bg-indigo-50/50 rounded-xl border-2 border-dashed border-indigo-200 flex flex-col items-center justify-center gap-3 shadow-inner">
+          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm font-bold text-indigo-700">AI is painting...</span>
         </div>
-      ) : error ? (
-        <div className="text-red-500 text-sm font-bold flex flex-col items-center gap-2">
-          <Icon name="alert" className="w-6 h-6" />
-          {error}
-          <button onClick={generateImage} className="px-4 py-2 mt-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors">Try Again</button>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-2">
-          <div className="bg-indigo-100 p-2.5 rounded-full text-indigo-500 mb-1 shadow-sm">
-            <Icon name="image" className="w-6 h-6" />
-          </div>
-          <button onClick={generateImage} className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2">
-            <Icon name="activity" className="w-4 h-4" /> Draw with AI (Saves to Device)
+      )}
+      {errored && (
+        <div className="absolute inset-0 bg-red-50 rounded-xl border-2 border-dashed border-red-200 flex flex-col items-center justify-center gap-2 p-4 text-center">
+          <Icon name="alert" className="w-6 h-6 text-red-500" />
+          <span className="text-sm font-bold text-red-700">Couldn't load illustration</span>
+          <button
+            onClick={redraw}
+            className="px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors text-xs font-bold"
+          >
+            Try Again
           </button>
         </div>
+      )}
+      <img
+        key={seed}
+        src={imgUrl}
+        alt={alt}
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={() => setErrored(true)}
+        className={`w-full h-full object-cover rounded-xl border-2 border-slate-200 shadow-sm bg-white transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+      {loaded && (
+        <>
+          <button
+            onClick={redraw}
+            className="absolute top-2 right-2 bg-black/60 hover:bg-black/90 text-white px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold flex items-center gap-1.5 backdrop-blur-sm shadow-md"
+          >
+            <Icon name="activity" className="w-3.5 h-3.5" /> Redraw
+          </button>
+          <div className="absolute bottom-2 right-2 bg-white/90 text-slate-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm shadow-sm pointer-events-none">
+            AI Generated
+          </div>
+        </>
       )}
     </div>
   );
@@ -1613,30 +1588,8 @@ export default function App() {
   const [tempFileUrl, setTempFileUrl] = useState(null);
   const [tempCredit, setTempCredit] = useState('');
 
-  // --- SETTINGS / API KEY STATE ---
+  // --- SETTINGS MODAL ---
   const [showSettings, setShowSettings] = useState(false);
-  const [geminiApiKey, setGeminiApiKey] = useState(() => localStorage.getItem('agripro_gemini_api_key') || '');
-  const [apiKeyDraft, setApiKeyDraft] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-
-  const saveApiKey = () => {
-    const trimmed = apiKeyDraft.trim();
-    if (trimmed) {
-      localStorage.setItem('agripro_gemini_api_key', trimmed);
-      setGeminiApiKey(trimmed);
-    } else {
-      localStorage.removeItem('agripro_gemini_api_key');
-      setGeminiApiKey('');
-    }
-    setApiKeyDraft('');
-    setShowSettings(false);
-  };
-
-  const clearApiKey = () => {
-    localStorage.removeItem('agripro_gemini_api_key');
-    setGeminiApiKey('');
-    setApiKeyDraft('');
-  };
 
   // --- N-CALCULATOR STATE ---
   const [showNCalc, setShowNCalc] = useState(false);
@@ -1926,7 +1879,7 @@ export default function App() {
               </button>
             </div>
             <button
-              onClick={() => { setApiKeyDraft(geminiApiKey); setShowSettings(true); }}
+              onClick={() => setShowSettings(true)}
               className="p-2 md:p-2.5 rounded-lg bg-emerald-950 border border-emerald-800 text-emerald-300 hover:text-white hover:bg-emerald-800 transition-colors"
               title="Settings"
               aria-label="Open settings"
@@ -2775,75 +2728,37 @@ export default function App() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* --- GEMINI API KEY --- */}
+              {/* --- AI ILLUSTRATIONS INFO --- */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Icon name="activity" className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-lg font-bold text-slate-900">Gemini AI Illustrator</h3>
+                  <h3 className="text-lg font-bold text-slate-900">AI Illustrations</h3>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Add your Google Gemini API key to enable AI-generated pest illustrations.
-                  Your key is stored locally on this device and never sent anywhere except Google's API.
-                </p>
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 leading-relaxed">
-                  Get a free key at{' '}
+                  Pest and leaf-curl diagnostic illustrations are generated on demand by{' '}
                   <a
-                    href="https://aistudio.google.com/apikey"
+                    href="https://pollinations.ai"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-bold underline hover:text-amber-700"
+                    className="font-bold text-indigo-600 underline hover:text-indigo-800"
                   >
-                    aistudio.google.com/apikey
+                    Pollinations.ai
                   </a>
-                  . The Imagen model may require a paid tier.
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="apiKeyInput" className="text-sm font-bold text-slate-700">
-                    API Key
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="apiKeyInput"
-                      type={showApiKey ? 'text' : 'password'}
-                      value={apiKeyDraft}
-                      onChange={(e) => setApiKeyDraft(e.target.value)}
-                      placeholder={geminiApiKey ? '•••••••• (key saved)' : 'AIza...'}
-                      className="w-full p-3 pr-20 bg-slate-50 border-2 border-slate-300 rounded-xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 transition-all font-mono text-sm"
-                      autoComplete="off"
-                      spellCheck="false"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiKey((s) => !s)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-bold text-slate-600 hover:text-emerald-700 bg-white border border-slate-300 rounded-md"
-                    >
-                      {showApiKey ? 'Hide' : 'Show'}
-                    </button>
+                  , a free public AI image service. No API key, no signup, no payment required.
+                </p>
+                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-xs text-indigo-900 leading-relaxed space-y-1">
+                  <div className="flex items-start gap-2">
+                    <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    <span>First load of each illustration takes ~5–15 seconds while the AI paints it.</span>
                   </div>
-                  {geminiApiKey && (
-                    <div className="flex items-center gap-2 text-xs text-emerald-700 font-bold">
-                      <Icon name="shield" className="w-3.5 h-3.5" />
-                      Key currently saved on this device
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex gap-2 pt-1">
-                  <button
-                    onClick={saveApiKey}
-                    className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-sm"
-                  >
-                    Save
-                  </button>
-                  {geminiApiKey && (
-                    <button
-                      onClick={clearApiKey}
-                      className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold rounded-xl transition-all"
-                    >
-                      Clear
-                    </button>
-                  )}
+                  <div className="flex items-start gap-2">
+                    <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    <span>Hover an illustration and tap <b>Redraw</b> to generate a new variant.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    <span>Requires an internet connection only when generating new images.</span>
+                  </div>
                 </div>
               </div>
 

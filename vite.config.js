@@ -39,12 +39,12 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
-            // Cache Gemini Imagen responses opportunistically (NetworkFirst — fresh when online, cached when offline)
-            urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
+            // Cache Pollinations.ai illustrations — once generated, available offline
+            urlPattern: /^https:\/\/image\.pollinations\.ai\/.*/i,
+            handler: 'CacheFirst',
             options: {
-              cacheName: 'gemini-api-cache',
-              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheName: 'pollinations-images',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 },
               cacheableResponse: { statuses: [0, 200] }
             }
           }

@@ -8,7 +8,7 @@ Built with **React 18 + Vite + Tailwind CSS** and `vite-plugin-pwa` for true off
 - **Real PWA** — installable on Android, iOS, desktop. Works offline after first visit.
 - **Production Tailwind** — purged, minified, no CDN warning.
 - **Auto-deploy to GitHub Pages** via GitHub Actions on every push to `main`.
-- **Gemini Imagen integration** — API key is user-configurable in Settings (stored locally on device, never transmitted anywhere except Google's API).
+- **AI illustrations powered by [Pollinations.ai](https://pollinations.ai)** — free, no API key, no signup required. Images are cached on-device after first generation, so they work offline.
 
 ---
 
@@ -72,21 +72,6 @@ const base = process.env.BASE || '/your-repo-name/';
 // Or for <user>.github.io (root domain):
 const base = process.env.BASE || '/';
 ```
-
----
-
-## Setting up the Gemini API key
-
-After deploy:
-
-1. Open the app.
-2. Tap the **gear icon** in the top-right header.
-3. Get a free API key from [Google AI Studio](https://aistudio.google.com/apikey).
-4. Paste it and tap **Save**.
-
-The key is stored in `localStorage` on the user's device only. It never leaves the device except to call Google's API directly. Each user installs once and sets their own key.
-
-> **Note on Imagen:** the `imagen-4.0-generate-001` model may require a paid Gemini API tier. Free-tier users can still use the rest of the app — only AI illustration will be disabled.
 
 ---
 
