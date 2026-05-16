@@ -7,7 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // https://<user>.github.io/agripro-dipm/ — so base must be '/agripro-dipm/'.
 // Change this to match your actual repository name, or set BASE env var:
 //   BASE=/my-repo-name/ npm run build
-const base = process.env.BASE || '/agripro-dipm/';
+const base = process.env.BASE || '/agripro-dipm-en/';
 
 export default defineConfig({
   base,
