@@ -1491,80 +1491,112 @@ const DT50Guide = () => {
 };
 
 
-// --- AI ILLUSTRATOR (Pollinations.ai — free, no API key required) ---
-// Uses image.pollinations.ai which generates an image directly from a URL.
-// We cache a seed in localStorage so each pest gets a stable image across reloads;
-// "Redraw" picks a new seed to get a different generation.
-const AIIllustration = ({ prompt, alt, id }) => {
-  const seedKey = `agripro_ai_seed_${id}`;
-  const [seed, setSeed] = useState(() => {
-    const saved = localStorage.getItem(seedKey);
-    return saved ? parseInt(saved, 10) : Math.floor(Math.random() * 1000000);
-  });
-  const [loaded, setLoaded] = useState(false);
-  const [errored, setErrored] = useState(false);
-
-  // Persist seed so the same illustration shows up next time
-  useEffect(() => {
-    try {
-      localStorage.setItem(seedKey, String(seed));
-    } catch (e) {
-      // localStorage might be full or disabled in private mode — non-fatal
-    }
-  }, [seed, seedKey]);
-
-  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=384&seed=${seed}&nologo=true&model=flux`;
-
-  const redraw = () => {
-    setLoaded(false);
-    setErrored(false);
-    setSeed(Math.floor(Math.random() * 1000000));
-  };
-
-  return (
-    <div className="relative mb-4 group h-48 w-full">
-      {!loaded && !errored && (
-        <div className="absolute inset-0 bg-indigo-50/50 rounded-xl border-2 border-dashed border-indigo-200 flex flex-col items-center justify-center gap-3 shadow-inner">
-          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-sm font-bold text-indigo-700">AI is painting...</span>
+// --- LEAF CURL DIAGNOSTIC DIAGRAMS (inline SVG, no network) ---
+// Hand-drawn botanical diagrams that show the actual mechanism of each curl pattern.
+// Two variants keyed by id: 'downward_curl' and 'upward_curl'.
+const AIIllustration = ({ id, alt }) => {
+  if (id === 'downward_curl') {
+    return (
+      <div className="relative mb-4 w-full h-48 rounded-xl border-2 border-slate-200 shadow-sm bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+        <svg viewBox="0 0 680 240" className="w-full h-full" role="img" aria-label={alt} xmlns="http://www.w3.org/2000/svg">
+          <title>Downward leaf curl diagnostic</title>
+          {/* Upper leaf surface (convex green) */}
+          <path d="M 100 90 Q 340 20, 580 90 Q 575 105, 570 112 Q 340 48, 110 112 Q 105 105, 100 90 Z"
+                fill="#639922" stroke="#3B6D11" strokeWidth="1"/>
+          {/* Underside (concave, where pests hide) */}
+          <path d="M 110 112 Q 340 48, 570 112 L 540 180 Q 340 110, 140 180 L 110 112 Z"
+                fill="#97C459" stroke="#3B6D11" strokeWidth="0.5" opacity="0.95"/>
+          {/* Curling edges */}
+          <path d="M 100 90 Q 95 160, 140 180" fill="none" stroke="#3B6D11" strokeWidth="1.2"/>
+          <path d="M 580 90 Q 585 160, 540 180" fill="none" stroke="#3B6D11" strokeWidth="1.2"/>
+          {/* Midrib */}
+          <path d="M 110 112 Q 340 48, 570 112" fill="none" stroke="#27500A" strokeWidth="1.5" opacity="0.6"/>
+          {/* Lateral veins */}
+          <path d="M 200 105 Q 240 135, 260 175" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.4"/>
+          <path d="M 280 90 Q 300 125, 310 170" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.4"/>
+          <path d="M 400 90 Q 380 125, 370 170" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.4"/>
+          <path d="M 480 105 Q 440 135, 420 175" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.4"/>
+          {/* Pest dots clustered along the underside */}
+          <g fill="#4A1B0C" opacity="0.85">
+            <circle cx="220" cy="155" r="3"/><circle cx="235" cy="160" r="2.5"/>
+            <circle cx="250" cy="165" r="3"/><circle cx="265" cy="160" r="2"/>
+            <circle cx="290" cy="155" r="3"/><circle cx="310" cy="160" r="2.5"/>
+            <circle cx="340" cy="155" r="3.5"/><circle cx="370" cy="160" r="2.5"/>
+            <circle cx="395" cy="155" r="3"/><circle cx="420" cy="160" r="2"/>
+            <circle cx="440" cy="165" r="3"/><circle cx="460" cy="160" r="2.5"/>
+          </g>
+          {/* Downward curl arrows */}
+          <path d="M 100 50 Q 105 35, 130 45" fill="none" stroke="#D85A30" strokeWidth="2" strokeLinecap="round"/>
+          <polygon points="125,40 138,46 130,53" fill="#D85A30"/>
+          <path d="M 580 50 Q 575 35, 550 45" fill="none" stroke="#D85A30" strokeWidth="2" strokeLinecap="round"/>
+          <polygon points="555,40 542,46 550,53" fill="#D85A30"/>
+          {/* Inline annotations */}
+          <text x="60" y="65" fontFamily="sans-serif" fontSize="11" fill="#27500A" fontWeight="600">Upper</text>
+          <text x="60" y="78" fontFamily="sans-serif" fontSize="9" fill="#3B6D11" opacity="0.8">(convex)</text>
+          <text x="540" y="205" fontFamily="sans-serif" fontSize="11" fill="#4A1B0C" fontWeight="600">Pests</text>
+          <text x="540" y="218" fontFamily="sans-serif" fontSize="9" fill="#993C1D">on underside</text>
+        </svg>
+        <div className="absolute bottom-1.5 right-2 bg-white/90 text-slate-700 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm shadow-sm pointer-events-none">
+          Diagnostic
         </div>
-      )}
-      {errored && (
-        <div className="absolute inset-0 bg-red-50 rounded-xl border-2 border-dashed border-red-200 flex flex-col items-center justify-center gap-2 p-4 text-center">
-          <Icon name="alert" className="w-6 h-6 text-red-500" />
-          <span className="text-sm font-bold text-red-700">Couldn't load illustration</span>
-          <button
-            onClick={redraw}
-            className="px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors text-xs font-bold"
-          >
-            Try Again
-          </button>
+      </div>
+    );
+  }
+
+  if (id === 'upward_curl') {
+    return (
+      <div className="relative mb-4 w-full h-48 rounded-xl border-2 border-slate-200 shadow-sm bg-gradient-to-b from-slate-50 to-white overflow-hidden">
+        <svg viewBox="0 0 680 240" className="w-full h-full" role="img" aria-label={alt} xmlns="http://www.w3.org/2000/svg">
+          <title>Upward leaf curl diagnostic</title>
+          {/* Healthy green center (concave, cupped up) */}
+          <path d="M 140 110 Q 340 160, 540 110 L 545 140 Q 340 190, 135 140 L 140 110 Z"
+                fill="#639922" stroke="#3B6D11" strokeWidth="1"/>
+          {/* Left crispy dead edge curling up */}
+          <path d="M 60 50 Q 100 30, 140 60 L 140 110 Q 100 105, 60 90 L 60 50 Z"
+                fill="#854F0B" stroke="#633806" strokeWidth="0.5"/>
+          <path d="M 70 55 Q 90 52, 110 60" fill="none" stroke="#412402" strokeWidth="0.6" opacity="0.7"/>
+          <path d="M 65 70 Q 95 68, 125 78" fill="none" stroke="#412402" strokeWidth="0.6" opacity="0.7"/>
+          <path d="M 68 85 Q 100 84, 130 98" fill="none" stroke="#412402" strokeWidth="0.6" opacity="0.5"/>
+          <path d="M 60 50 L 55 45 L 62 42 L 58 36 L 66 38 L 64 30" fill="none" stroke="#633806" strokeWidth="0.8"/>
+          {/* Right crispy dead edge curling up */}
+          <path d="M 620 50 Q 580 30, 540 60 L 540 110 Q 580 105, 620 90 L 620 50 Z"
+                fill="#854F0B" stroke="#633806" strokeWidth="0.5"/>
+          <path d="M 610 55 Q 590 52, 570 60" fill="none" stroke="#412402" strokeWidth="0.6" opacity="0.7"/>
+          <path d="M 615 70 Q 585 68, 555 78" fill="none" stroke="#412402" strokeWidth="0.6" opacity="0.7"/>
+          <path d="M 612 85 Q 580 84, 550 98" fill="none" stroke="#412402" strokeWidth="0.6" opacity="0.5"/>
+          <path d="M 620 50 L 625 45 L 618 42 L 622 36 L 614 38 L 616 30" fill="none" stroke="#633806" strokeWidth="0.8"/>
+          {/* Transition (yellow-brown) zones */}
+          <path d="M 140 60 L 140 110 L 135 140 Q 142 125, 142 90 L 140 60 Z" fill="#BA7517" opacity="0.5"/>
+          <path d="M 540 60 L 540 110 L 545 140 Q 538 125, 538 90 L 540 60 Z" fill="#BA7517" opacity="0.5"/>
+          {/* Bright green midrib */}
+          <path d="M 140 135 Q 340 175, 540 135" fill="none" stroke="#173404" strokeWidth="2.5"/>
+          <path d="M 140 135 Q 340 175, 540 135" fill="none" stroke="#639922" strokeWidth="1.5"/>
+          {/* Lateral veins */}
+          <path d="M 220 125 Q 240 145, 250 160" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.5"/>
+          <path d="M 290 130 Q 305 150, 310 165" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.5"/>
+          <path d="M 390 130 Q 375 150, 370 165" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.5"/>
+          <path d="M 460 125 Q 440 145, 430 160" fill="none" stroke="#27500A" strokeWidth="0.5" opacity="0.5"/>
+          {/* Upward curl arrows */}
+          <path d="M 90 18 Q 95 5, 110 12" fill="none" stroke="#D85A30" strokeWidth="2" strokeLinecap="round"/>
+          <polygon points="105,8 117,14 110,21" fill="#D85A30"/>
+          <path d="M 590 18 Q 585 5, 570 12" fill="none" stroke="#D85A30" strokeWidth="2" strokeLinecap="round"/>
+          <polygon points="575,8 563,14 570,21" fill="#D85A30"/>
+          {/* Labels */}
+          <text x="60" y="155" fontFamily="sans-serif" fontSize="11" fill="#633806" fontWeight="600">Crispy</text>
+          <text x="60" y="168" fontFamily="sans-serif" fontSize="9" fill="#854F0B">brown edge</text>
+          <text x="555" y="155" fontFamily="sans-serif" fontSize="11" fill="#633806" fontWeight="600">Crispy</text>
+          <text x="555" y="168" fontFamily="sans-serif" fontSize="9" fill="#854F0B">brown edge</text>
+          <text x="340" y="215" textAnchor="middle" fontFamily="sans-serif" fontSize="10" fill="#3B6D11" fontWeight="600">Center vein stays green</text>
+        </svg>
+        <div className="absolute bottom-1.5 right-2 bg-white/90 text-slate-700 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm shadow-sm pointer-events-none">
+          Diagnostic
         </div>
-      )}
-      <img
-        key={seed}
-        src={imgUrl}
-        alt={alt}
-        loading="lazy"
-        onLoad={() => setLoaded(true)}
-        onError={() => setErrored(true)}
-        className={`w-full h-full object-cover rounded-xl border-2 border-slate-200 shadow-sm bg-white transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-      />
-      {loaded && (
-        <>
-          <button
-            onClick={redraw}
-            className="absolute top-2 right-2 bg-black/60 hover:bg-black/90 text-white px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-xs font-bold flex items-center gap-1.5 backdrop-blur-sm shadow-md"
-          >
-            <Icon name="activity" className="w-3.5 h-3.5" /> Redraw
-          </button>
-          <div className="absolute bottom-2 right-2 bg-white/90 text-slate-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm shadow-sm pointer-events-none">
-            AI Generated
-          </div>
-        </>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  // Fallback for any other id (shouldn't happen with current usage)
+  return null;
 };
 
 export default function App() {
@@ -2236,8 +2268,7 @@ export default function App() {
                           
                           <AIIllustration 
                             id="downward_curl"
-                            prompt="A highly realistic, botanical illustration of a single green durian leaf curling downward and inward like an upside-down cup or tent. The leaf shows signs of minor pest damage on the underside. Clean white background, photorealistic lighting." 
-                            alt="Downward curling durian leaf" 
+                            alt="Downward curling durian leaf — pests hide on the underside" 
                           />
 
                           <p className="text-slate-600 mb-4 leading-relaxed flex-1">
@@ -2264,8 +2295,7 @@ export default function App() {
 
                           <AIIllustration 
                             id="upward_curl"
-                            prompt="A highly realistic, botanical illustration of a single green durian leaf curling upward and outward like a boat. The outer edges of the leaf are crispy, brown, and dead, while the center vein remains bright green. Clean white background, photorealistic." 
-                            alt="Upward curling durian leaf" 
+                            alt="Upward curling durian leaf — crispy brown edges with green center vein" 
                           />
 
                           <p className="text-slate-600 mb-4 leading-relaxed flex-1">
@@ -2728,36 +2758,29 @@ export default function App() {
             </div>
 
             <div className="p-6 space-y-6">
-              {/* --- AI ILLUSTRATIONS INFO --- */}
+              {/* --- DIAGNOSTIC DIAGRAMS INFO --- */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Icon name="activity" className="w-5 h-5 text-indigo-600" />
-                  <h3 className="text-lg font-bold text-slate-900">AI Illustrations</h3>
+                  <Icon name="leaf" className="w-5 h-5 text-emerald-600" />
+                  <h3 className="text-lg font-bold text-slate-900">Diagnostic Illustrations</h3>
                 </div>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Pest and leaf-curl diagnostic illustrations are generated on demand by{' '}
-                  <a
-                    href="https://pollinations.ai"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-indigo-600 underline hover:text-indigo-800"
-                  >
-                    Pollinations.ai
-                  </a>
-                  , a free public AI image service. No API key, no signup, no payment required.
+                  All leaf-curl diagrams and pest illustrations are built into the app as vector
+                  drawings. They render instantly and work fully offline — no API keys, no
+                  third-party services, no network calls.
                 </p>
-                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-xs text-indigo-900 leading-relaxed space-y-1">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-900 leading-relaxed space-y-1">
                   <div className="flex items-start gap-2">
-                    <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                    <span>First load of each illustration takes ~5–15 seconds while the AI paints it.</span>
+                    <Icon name="shield" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    <span>Fully offline — no internet required after the first install.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Icon name="activity" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                    <span>Sharp at any zoom level (true vector graphics).</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                    <span>Hover an illustration and tap <b>Redraw</b> to generate a new variant.</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Icon name="info" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                    <span>Requires an internet connection only when generating new images.</span>
+                    <span>Designed to highlight the diagnostic feature, not just photograph the leaf.</span>
                   </div>
                 </div>
               </div>

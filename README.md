@@ -8,7 +8,7 @@ Built with **React 18 + Vite + Tailwind CSS** and `vite-plugin-pwa` for true off
 - **Real PWA** — installable on Android, iOS, desktop. Works offline after first visit.
 - **Production Tailwind** — purged, minified, no CDN warning.
 - **Auto-deploy to GitHub Pages** via GitHub Actions on every push to `main`.
-- **AI illustrations powered by [Pollinations.ai](https://pollinations.ai)** — free, no API key, no signup required. Images are cached on-device after first generation, so they work offline.
+- **Built-in diagnostic illustrations** — leaf-curl SVG diagrams are inline in the app. No AI service, no API key, no network calls, instant render, work fully offline.
 
 ---
 

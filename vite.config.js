@@ -36,19 +36,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         // Allow large precaching since this is a data-heavy single-page tool
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            // Cache Pollinations.ai illustrations — once generated, available offline
-            urlPattern: /^https:\/\/image\.pollinations\.ai\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'pollinations-images',
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 90 },
-              cacheableResponse: { statuses: [0, 200] }
-            }
-          }
-        ]
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
       }
     })
   ]
